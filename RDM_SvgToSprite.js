@@ -129,8 +129,8 @@ Radium.S2S.version = 1.00;
         ctx.strokeStyle = args[3];
         ctx.lineWidth = parseInt(args[4]);
         ctx.stroke();
-        var st = tags[i].getAttribute("style");
-        if (st && st.startsWith("fill")) {
+        var st = tagsCircle[j].getAttribute("fill");
+        if (st && st !== "none") {
           ctx.fillStyle = args[3];
           ctx.fill();
         }
