@@ -105,13 +105,18 @@ Radium.S2S.version = 1.00;
       var oParser = new DOMParser();
       var oDOM = oParser.parseFromString(DataManager._svgData.get(args[0]), "text/xml");
       var sprite = new Sprite();
-      var tagsSvg = oDOM.documentElement.getElementsByTagName("svg");
-      for (var k=0; k<tagsSvg.length; k++) {
-        var v = new Path2D(tagsSvg[k].getAttribute("viewBox"));
-        var width = parseInt(tagsSvg[k].getAttribute("width").replace("px",""));
-        var height = parseInt(tagsSvg[k].getAttribute("height").replace("px",""));
+      if (oDOM.documentElement.tagName === "svg" && oDOM.documentElement.getAttribute("viewBox")) {
+        var width = parseInt(oDOM.documentElement.getAttribute("width").replace("px",""));
+        var height = parseInt(oDOM.documentElement.getAttribute("height").replace("px",""));
+      } else {
+        var tagsSvg = oDOM.documentElement.getElementsByTagName("svg");
+        for (var k=0; k<tagsSvg.length; k++) {
+          var v = tagsSvg[k].getAttribute("viewBox");
+          if (!v) continue;
+          var width = parseInt(tagsSvg[k].getAttribute("width").replace("px",""));
+          var height = parseInt(tagsSvg[k].getAttribute("height").replace("px",""));
+        }
       }
-      
       var tags = oDOM.documentElement.getElementsByTagName("path");
       for (var i=0; i<tags.length; i++) {
         var sp = new Sprite(new Bitmap(width,height));
