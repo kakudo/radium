@@ -16,7 +16,7 @@ Radium.S2S.version = 1.00;
  * 
  * @param SVGs
  * @text SVGファイルリスト
- * @desc 使用するSVGファイルのリストをカンマ区切りで入力します。
+ * @desc 使用するSVGファイルのリストをカンマ区切りで入力します。拡張子.svgは不要です。
  * @default sample1, sample2
  * 
  * @help
@@ -105,7 +105,6 @@ Radium.S2S.version = 1.00;
       var tags = oDOM.documentElement.getElementsByTagName("path");
       var sprite = new Sprite();
       for (var i=0; i<tags.length; i++) {
-        console.log(tags[i].getAttribute("d"))
         var sp = new Sprite(new Bitmap(parseInt(args[1]),parseInt(args[2])));
         var ctx = sp.bitmap.context;
         var p = new Path2D(tags[i].getAttribute("d"));
