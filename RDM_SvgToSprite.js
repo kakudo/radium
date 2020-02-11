@@ -111,6 +111,11 @@ Radium.S2S.version = 1.00;
         ctx.strokeStyle = args[3];
         ctx.lineWidth = parseInt(args[4]);
         ctx.stroke(p);
+        var st = tags[i].getAttribute("style");
+        if (st && st.startsWith("fill")) {
+          ctx.fillStyle = args[3];
+          ctx.fill(p);
+        }
         sprite.addChild(sp);
       }
       var tagsCircle = oDOM.documentElement.getElementsByTagName("circle");
@@ -124,6 +129,11 @@ Radium.S2S.version = 1.00;
         ctx.strokeStyle = args[3];
         ctx.lineWidth = parseInt(args[4]);
         ctx.stroke();
+        var st = tags[i].getAttribute("style");
+        if (st && st.startsWith("fill")) {
+          ctx.fillStyle = args[3];
+          ctx.fill();
+        }
         sprite.addChild(sp);
       }
       sprite._SmaxDur = parseInt(args[6]);
