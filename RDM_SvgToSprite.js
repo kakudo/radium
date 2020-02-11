@@ -33,14 +33,16 @@ Radium.S2S.version = 1.00;
  *  イベントコマンド「プラグインコマンド」から実行。
  *  （パラメータの間は半角スペースで区切る）
  *
- * S2S_SHOW sample 1000 1000 rgb(0,0,0) 1 100 50 2 3 4 5 0.6 0.7 0.8 0.9
- * #sample.svgファイルのSVGを(1000,1000)のcanvasに表示する。(色はrgb(0,0,0)で線の太さは1px)
+ * S2S_SHOW sample rgb(0,0,0) 1 100 50 2 3 4 5 0.6 0.7 0.8 0.9 center
+ * #sample.svgファイルのSVGを表示する。(色はrgb(0,0,0)で線の太さは1px)
  *  100カウント後から50カウントかけてx:2, y:3の位置から
  *  x:4, y:5の位置までx縮尺:0.6, y縮尺:0.7からx縮尺:0.8, y縮尺:0.9まで拡大しつつ表示する。
+ *  SVGの中心を表示中心にする場合は最後にcenterを指定する。
  * 
- * S2S_ERASE 100 50 2 3 4 5 0.6 0.7 0.8 0.9
+ * S2S_ERASE 100 50 2 3 4 5 0.6 0.7 0.8 0.9 center
  * #先行して表示したスプライトを使い、100カウント後から50カウントかけてx:2, y:3の位置から
  *  x:4, y:5の位置までx縮尺:0.6, y縮尺:0.7からx縮尺:0.8, y縮尺:0.9まで拡大しつつ消去する。
+ *  SVGの中心を表示中心にする場合は最後にcenterを指定する。
  * 
  *
  * 利用規約：
@@ -102,56 +104,72 @@ Radium.S2S.version = 1.00;
       var sp_set = scene._spriteset;
       var oParser = new DOMParser();
       var oDOM = oParser.parseFromString(DataManager._svgData.get(args[0]), "text/xml");
-      var tags = oDOM.documentElement.getElementsByTagName("path");
       var sprite = new Sprite();
+      var tagsSvg = oDOM.documentElement.getElementsByTagName("svg");
+      for (var k=0; k<tagsSvg.length; k++) {
+        var v = new Path2D(tagsSvg[k].getAttribute("viewBox"));
+        var width = parseInt(tagsSvg[k].getAttribute("width").replace("px",""));
+        var height = parseInt(tagsSvg[k].getAttribute("height").replace("px",""));
+      }
+      
+      var tags = oDOM.documentElement.getElementsByTagName("path");
       for (var i=0; i<tags.length; i++) {
-        var sp = new Sprite(new Bitmap(parseInt(args[1]),parseInt(args[2])));
+        var sp = new Sprite(new Bitmap(width,height));
         var ctx = sp.bitmap.context;
         var p = new Path2D(tags[i].getAttribute("d"));
-        ctx.strokeStyle = args[3];
-        ctx.lineWidth = parseInt(args[4]);
+        ctx.strokeStyle = args[1];
+        ctx.lineWidth = parseInt(args[2]);
         ctx.stroke(p);
         var st = tags[i].getAttribute("style");
         if (st && st.startsWith("fill")) {
-          ctx.fillStyle = args[3];
+          ctx.fillStyle = args[1];
           ctx.fill(p);
         }
         sprite.addChild(sp);
       }
       var tagsCircle = oDOM.documentElement.getElementsByTagName("circle");
       for (var j=0; j<tagsCircle.length; j++) {
-        var sp = new Sprite(new Bitmap(parseInt(args[1]),parseInt(args[2])));
+        var sp = new Sprite(new Bitmap(width,height));
         var ctx = sp.bitmap.context;
         var x = tagsCircle[j].getAttribute("cx");
         var y = tagsCircle[j].getAttribute("cy");
         var r = tagsCircle[j].getAttribute("r");
         ctx.arc(x, y, r, 0, 2 * Math.PI, false);
-        ctx.strokeStyle = args[3];
-        ctx.lineWidth = parseInt(args[4]);
+        ctx.strokeStyle = args[1];
+        ctx.lineWidth = parseInt(args[2]);
         ctx.stroke();
         var st = tagsCircle[j].getAttribute("fill");
         if (st && st !== "none") {
-          ctx.fillStyle = args[3];
+          ctx.fillStyle = args[1];
           ctx.fill();
         }
         sprite.addChild(sp);
       }
-      sprite._SmaxDur = parseInt(args[6]);
-      sprite._Sdur = parseInt(args[6]);
-      sprite._Six = parseInt(args[7]);
-      sprite._Siy = parseInt(args[8]);
-      sprite._Sfx = parseInt(args[9]);
-      sprite._Sfy = parseInt(args[10]);
-      sprite._Siscalex = parseFloat(args[11]);
-      sprite._Siscaley = parseFloat(args[12]);
-      sprite._Sfscalex = parseFloat(args[13]);
-      sprite._Sfscaley = parseFloat(args[14]);
-      sprite.x = parseInt(args[7]);
-      sprite.y = parseInt(args[8]);
-      sprite.scale.x = parseFloat(args[11]);
-      sprite.scale.y = parseFloat(args[12]);
-      sprite._Sinittime = parseInt(args[5]);
+      if (args.length >=14 && args[13] === "center") {
+        var xhose = width / 2;
+        var yhose = height / 2;
+      } else {
+        var xhose = 0;
+        var yhose = 0;        
+      }
+      sprite._SmaxDur = parseInt(args[4]);
+      sprite._Sdur = parseInt(args[4]);
+      sprite._Six = parseInt(args[5]) - xhose * parseFloat(args[9]);
+      sprite._Siy = parseInt(args[6]) - yhose * parseFloat(args[10]);
+      sprite._Sfx = parseInt(args[7]) - xhose * parseFloat(args[11]);
+      sprite._Sfy = parseInt(args[8]) - yhose * parseFloat(args[12]);
+      sprite._Siscalex = parseFloat(args[9]);
+      sprite._Siscaley = parseFloat(args[10]);
+      sprite._Sfscalex = parseFloat(args[11]);
+      sprite._Sfscaley = parseFloat(args[12]);
+      sprite.x = parseInt(args[5]) - xhose;
+      sprite.y = parseInt(args[6]) - yhose;
+      sprite.scale.x = parseFloat(args[9]);
+      sprite.scale.y = parseFloat(args[10]);
+      sprite._Sinittime = parseInt(args[3]);
       sprite.opacity = 0;
+      sprite._xhose = xhose;
+      sprite._yhose = yhose;
       sp_set.addChild(sprite);
       if (!sp_set._moveMagicCircleStaySprite) {
         sp_set._moveMagicCircleStaySprite = [sprite];
@@ -165,12 +183,19 @@ Radium.S2S.version = 1.00;
       var sp_set = scene._spriteset;
       if (!sp_set._moveMagicCircleStaySprite || sp_set._moveMagicCircleStaySprite.length <= 0) return;
       var sprite = sp_set._moveMagicCircleStaySprite[0];
+      if (args.length >=11 && args[10] === "center") {
+        var xhose = sprite._xhose;
+        var yhose = sprite._yhose;
+      } else {
+        var xhose = 0;
+        var yhose = 0;        
+      }
       sprite._DdisDur = parseInt(args[1]);
       sprite._Ddur = parseInt(args[1]);
-      sprite._Dix = parseInt(args[2]);
-      sprite._Diy = parseInt(args[3]);
-      sprite._Dfx = parseInt(args[4]);
-      sprite._Dfy = parseInt(args[5]);
+      sprite._Dix = parseInt(args[2]) - xhose * parseFloat(args[6]);
+      sprite._Diy = parseInt(args[3]) - yhose * parseFloat(args[7]);
+      sprite._Dfx = parseInt(args[4]) - xhose * parseFloat(args[8]);
+      sprite._Dfy = parseInt(args[5]) - yhose * parseFloat(args[9]);
       sprite._Discalex = parseFloat(args[6]);
       sprite._Discaley = parseFloat(args[7]);
       sprite._Dfscalex = parseFloat(args[8]);
