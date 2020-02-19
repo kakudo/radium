@@ -99,6 +99,19 @@ Radium.S2S.version = 1.00;
       _Scene_Boot_prototype_create.call(this);
       DataManager.loadRdmSvgFile();
     };
+    Game_Interpreter.prototype.isFillthenFillCtx = function(tag, ctx, color) {
+      var st = tag.getAttribute("style");
+      if (st && st.startsWith("fill")) {
+        ctx.fillStyle = color;
+        ctx.fill(p);
+      } else {
+        st = tag.getAttribute("fill");
+        if (st && st !== "none") {
+          ctx.fillStyle = color;
+          ctx.fill();
+        }
+      }
+    };
     Game_Interpreter.prototype.execShowSvg = function(args) {
       var scene = SceneManager._scene;
       var sp_set = scene._spriteset;
@@ -118,24 +131,22 @@ Radium.S2S.version = 1.00;
         }
       }
       var tags = oDOM.documentElement.getElementsByTagName("path");
-      for (var i=0; i<tags.length; i++) {
-        var sp = new Sprite(new Bitmap(width,height));
-        var ctx = sp.bitmap.context;
-        var p = new Path2D(tags[i].getAttribute("d"));
-        ctx.strokeStyle = args[1];
-        ctx.lineWidth = parseInt(args[2]);
-        ctx.stroke(p);
-        var st = tags[i].getAttribute("style");
-        if (st && st.startsWith("fill")) {
-          ctx.fillStyle = args[1];
-          ctx.fill(p);
+      //for (var i=0; i<tags.length; i++) {
+        var spPath = new Sprite(new Bitmap(width,height));
+        var ctx = spPath.bitmap.context;
+        for (var i=0; i<tags.length; i++) {
+          var p = new Path2D(tags[i].getAttribute("d"));
+          ctx.strokeStyle = args[1];
+          ctx.lineWidth = parseInt(args[2]);
+          ctx.stroke(p);
+          this.isFillthenFillCtx(tags[i], ctx, args[1]);
         }
-        sprite.addChild(sp);
-      }
+        sprite.addChild(spPath);
+      //}
       var tagsCircle = oDOM.documentElement.getElementsByTagName("circle");
+      var spCircle = new Sprite(new Bitmap(width,height));
+      var ctx = spCircle.bitmap.context;
       for (var j=0; j<tagsCircle.length; j++) {
-        var sp = new Sprite(new Bitmap(width,height));
-        var ctx = sp.bitmap.context;
         var x = tagsCircle[j].getAttribute("cx");
         var y = tagsCircle[j].getAttribute("cy");
         var r = tagsCircle[j].getAttribute("r");
@@ -143,13 +154,61 @@ Radium.S2S.version = 1.00;
         ctx.strokeStyle = args[1];
         ctx.lineWidth = parseInt(args[2]);
         ctx.stroke();
-        var st = tagsCircle[j].getAttribute("fill");
-        if (st && st !== "none") {
-          ctx.fillStyle = args[1];
-          ctx.fill();
-        }
-        sprite.addChild(sp);
+        this.isFillthenFillCtx(tagsCircle[j], ctx, args[1]);
       }
+      sprite.addChild(spCircle);
+
+      var tagsPolygon = oDOM.documentElement.getElementsByTagName("polygon");
+      var spPolygon = new Sprite(new Bitmap(width,height));
+      var ctx = spPolygon.bitmap.context;
+      var separatorString = /\s+/;
+      for (var j=0; j<tagsPolygon.length; j++) {
+        var points = tagsPolygon[j].getAttribute("points");
+        if (points != null) {
+          ctx.beginPath();
+          var arrayStrig = points.split(separatorString);
+          arrayStrig.forEach((p,i) => {
+            var ps = p.split(",");
+            if (i==0) {
+              ctx.moveTo(ps[0],ps[1]);
+            } else {
+              ctx.lineTo(ps[0],ps[1]);
+            }
+          });
+          ctx.closePath();
+          ctx.strokeStyle = args[1];
+          ctx.lineWidth = parseInt(args[2]);
+          ctx.stroke();
+          this.isFillthenFillCtx(tagsPolygon[j], ctx, args[1]);
+        }
+      }
+      sprite.addChild(spPolygon);
+
+      var tagsPolyline = oDOM.documentElement.getElementsByTagName("polyline");
+      var spPolyline = new Sprite(new Bitmap(width,height));
+      var ctx = spPolyline.bitmap.context;
+      var separatorString = /\s+/;
+      for (var j=0; j<tagsPolyline.length; j++) {
+        var points = tagsPolyline[j].getAttribute("points");
+        if (points != null) {
+          ctx.beginPath();
+          var arrayStrig = points.split(separatorString);
+          arrayStrig.forEach((p,i) => {
+            var ps = p.split(",");
+            if (i==0) {
+              ctx.moveTo(ps[0],ps[1]);
+            } else {
+              ctx.lineTo(ps[0],ps[1]);
+            }
+          });
+          ctx.strokeStyle = args[1];
+          ctx.lineWidth = parseInt(args[2]);
+          ctx.stroke();
+          this.isFillthenFillCtx(tagsPolyline[j], ctx, args[1]);
+        }
+      }
+      sprite.addChild(spPolyline);
+
       if (args.length >=14 && args[13] === "center") {
         var xhose = width / 2;
         var yhose = height / 2;
