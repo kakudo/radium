@@ -21,7 +21,7 @@ Radium.AVVC.version = 1.00;
  * 
  * @param init_variables
  * @text 初期化対象変数
- * @desc EXEC_INITで0に初期化する変数番号のリストを入力します。
+ * @desc AVVC_INITで0に初期化する変数番号のリストを入力します。
  * @default 1, 2
  * 
  * @help
@@ -37,7 +37,7 @@ Radium.AVVC.version = 1.00;
  * 　AVVC_INITなどで適切に初期化を行いつつ実施してください）
  * ※この方法だと元の処理と変わってしまうため（元々は通信失敗しても変数に変化なし）、
  * 　JSが使える方のために専用のメソッドも用意しています。
- * 　DataManager.rdmGetCsvAddedVariable(照合する値, 変数番号, CSVファイル名（※全ての場合はNULLにする）)
+ * 　DataManager.rdmGetCsvAddedVariable(照合する値, 変数番号, CSVファイル名（※全ての場合はnullにする）)
  * 　の戻り値には、指定した変数番号の値にCSVファイルで照合して加算した値が返却されます。
  * 　変数に変更を加えないので、安全に使用することができます。
  * 
